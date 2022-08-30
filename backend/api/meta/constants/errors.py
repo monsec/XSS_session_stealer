@@ -1,0 +1,6 @@
+# GENERIC RESPONSE ERRORS
+BAD_REQUEST = "Bad request"
+
+# JWT ERRORS
+INVALID_TOKEN = "Invalid token"
+SIGNATURE_EXPIRED = "Signature expired"

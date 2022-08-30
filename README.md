@@ -1,4 +1,4 @@
-# XSS_session_stealer
-This project was developed with one thing in mind, demonstrate how an attacker can exploit XSS to steal sessions from cookies/localstorage.
+# Admin Report
+This web application was made with the intention of showing how XSS vulnerabilities can happen in the wild and cause several issues, in this case we are aiming to show how stealing credentials from cookies/localstorage can be so easy.
 
-Backend and Frontend both in this repository.
+- Made for Monsec by @Blanks
