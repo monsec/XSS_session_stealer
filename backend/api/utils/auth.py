@@ -16,7 +16,13 @@ from datetime import datetime, timedelta
 
 # Local imports
 from api.config import get_settings
-from api.meta.constants.errors import INVALID_TOKEN, SIGNATURE_EXPIRED
+from api.meta.constants.errors import (
+    INVALID_TOKEN,
+    SIGNATURE_EXPIRED,
+    USER_DOES_NOT_EXIST,
+)
+from api.utils.database import get_db
+from api.meta.database.model import User
 
 # -----------------------
 settings = get_settings()

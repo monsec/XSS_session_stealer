@@ -1,13 +1,17 @@
+# Package Imports
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel,Field
-from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-# local imports
-from api.config import get_settings
-from api.meta.constants.errors import BAD_REQUEST
+from fastapi.middleware.cors import CORSMiddleware
 
+# from fastapi.openapi.utils import get_openapi
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from pydantic import BaseModel, Field
+
+# local imports
+from api.meta.constants.errors import BAD_REQUEST
+from api.config import get_settings
+from api.endpoints import user, admin
 
 # -----------------------
 settings = get_settings()
@@ -16,10 +20,11 @@ settings = get_settings()
 
 # init app
 app = FastAPI(
-    title=settings.title,
-    description=settings.description,
-    version=settings.version,
+    title=settings.APP_TITLE,
+    description=settings.APP_DESCRIPTION,
+    version=settings.APP_VERSION,
 )
+
 
 class AdminFeedbackError(BaseModel):
     user_msg: str = Field(
@@ -34,7 +39,7 @@ class AdminFeedbackError(BaseModel):
     )
 
 
-class WeakApiErrorResponse(BaseModel):
+class AdminFeedbackAPIError(BaseModel):
     detail: AdminFeedbackError
 
 
@@ -76,13 +81,14 @@ async def validation_exception_handler(request, exc):
 
     return response
 
+
 DEFAULT_RESPONSE_CODES = {
     422: {},
-    400: {"description": BAD_REQUEST, "model": WeakApiErrorResponse},
+    400: {"description": BAD_REQUEST, "model": AdminFeedbackAPIError},
 }
 
 # set settings
-origins = ["http://localhost:3000", "*"]
+origins = ["http://localhost:3000/", "*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -92,22 +98,22 @@ app.add_middleware(
 )
 
 # Disallow slashes at the end of the endpoint
-app.router.redirect_slashes=False
+app.router.redirect_slashes = False
 
 
 @app.get("/")
-def root():
-    return {"msg": "hello!"}
+async def root():
+    return {"msg": "hello monsec member! what brings you here?"}
 
 
-@app.include_router(
+app.include_router(
     admin.router,
     prefix="/admin",
     tags=["Admin"],
     responses=DEFAULT_RESPONSE_CODES,
 )
 
-@app.include_router(
+app.include_router(
     user.router,
     prefix="/user",
     tags=["User"],
