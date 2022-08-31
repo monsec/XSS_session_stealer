@@ -19,5 +19,15 @@ auth_handler = AuthHandler()
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
-def create_admin_account():
+def create_account():
+    pass
+
+
+@router.post("/login", status_code=status.HTTP_200_OK)
+def login():
+    pass
+
+
+@router.get("/feedback", status_code=status.HTTP_200_OK)
+def post_feedback_comment():
     pass
