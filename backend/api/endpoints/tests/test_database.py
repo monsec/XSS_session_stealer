@@ -1,6 +1,6 @@
 """
-test_admin.py
-Tests for the user endpoints
+test_database.py
+Tests the database behaviour.
 """
 from uuid import uuid4, UUID
 
@@ -18,13 +18,13 @@ from api.config import get_settings
 settings = get_settings()
 
 
-def test_fetch_comments(client: TestClient, test_db: Session):
+def test_user_signup():
     assert False
 
 
-def test_delete_comment(client: TestClient, test_db: Session):
+def test_note_creation():
     assert False
 
 
-def test_view_comment(client: TestClient, test_db: Session):
+def test_note_deletion():
     assert False

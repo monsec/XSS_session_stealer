@@ -82,6 +82,7 @@ class User(Base):
     username = Column(
         String(64),
         nullable=False,
+        unique=True,
     )
     password = Column(
         String(128),
