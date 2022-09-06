@@ -4,7 +4,6 @@ The users will be able to send feedback to the admin from here.
 """
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
 
 # Local imports
 from api.config import get_settings
@@ -26,7 +25,6 @@ from api.meta.database.model import User, FeedbackComment
 
 router = APIRouter()
 settings = get_settings()
-auth_handler = AuthHandler()
 
 requires_db = Depends(get_db)
 requires_user_account = Depends(require_user_account)
@@ -42,7 +40,7 @@ def create_account(auth_handler: AuthDetails, db: Session = requires_db):
 
     Returns: None
     """
-
+    security = AuthHandler()
     # check that the username is not in the db
     user_exists = (
         db.query(User)
@@ -62,7 +60,7 @@ def create_account(auth_handler: AuthDetails, db: Session = requires_db):
     # else: add it to the db
 
     # hash password
-    password = AuthHandler.get_password_hash(auth_handler.password)
+    password = security.get_password_hash(auth_handler.password)
     username = auth_handler.username.lower()
     new_user = User(
         username=username,
@@ -97,36 +95,46 @@ def login(auth_handler: AuthDetails, db: Session = requires_db):
     # check  that the user username and password matches the db
     security = AuthHandler()
     username = auth_handler.username.lower()
-    hashed_password = security.get_password_hash(auth_handler.password)
-
     user = (
         db.query(User)
         .filter(
-            and_(
-                User.username == username,
-                User.password == hashed_password,
-            )
+            User.username == username,
         )
         .one_or_none()
     )
 
     # check if the user matches
-    if user is None:
+    if user is None or not security.verify_password(
+        auth_handler.password,
+        user.password,
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=INVALID_LOGIN,
         )
 
-    # else: return token
-    token = AuthHandler.encode_token(user.id)
+    # else: check password
+    token = security.encode_token(str(user.id))
     return {"token": token}
 
 
-@router.post("/feedback", status_code=status.HTTP_200_OK)
+@router.post("/feedback", status_code=status.HTTP_201_CREATED)
 def fetch_feedback_comments(
-    comment: CommentFeedback,
+    feedback: CommentFeedback,
     user: User = requires_user_account,
     db: Session = requires_db,
 ):
+    new_feedback = FeedbackComment(
+        comment=feedback.comment,
+    )
+
+    try:
+        db.add(new_feedback)
+        db.commit()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=SOMETHING_WENT_WRONG,
+        )
 
     pass

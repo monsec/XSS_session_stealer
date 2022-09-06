@@ -18,6 +18,18 @@ from api.config import get_settings
 settings = get_settings()
 
 
+def test_signup(client: TestClient, test_db: Session):
+
+    payload = {"username": "admin", "password": "password"}
+    # request
+    response = client.post("/admin/signup", json=payload)
+    assert response.status_code == status.HTTP_201_CREATED
+
+    # check database
+    admin = test_db.query(mdl.User).filter(mdl.User.username == "admin").one_or_none()
+    assert admin.is_admin is True
+
+
 def test_fetch_comments(client: TestClient, test_db: Session):
     assert False
 

@@ -18,9 +18,10 @@ from api.config import get_settings
 
 settings = get_settings()
 
-# login helper
+
 def login(user_id: UUID):
-    return AuthHandler.encode_token(user_id)
+    """Login Helper"""
+    return AuthHandler().encode_token(user_id)
 
 
 def test_signup(client: TestClient, test_db: Session):
@@ -96,27 +97,33 @@ def test_login(client: TestClient, test_db: Session):
     Test that the login works
     """
     fac.User._meta.sqlalchemy_session = test_db
-    password = AuthHandler().get_password_hash("password")
+    security = AuthHandler()
+
     # create user
     user_id = uuid4()
+    password = security.get_password_hash("password")
     fac.User.create(id=user_id, username="monsec", password=password)
+
+    print(test_db.query(mdl.User).filter(mdl.User.id == user_id).first())
 
     # request
     payload = {"username": "monsec", "password": "password"}
     response = client.post("/user/login", json=payload)
     res_data = response.json()
     assert response is not None
-    token = AuthHandler.decode_token(res_data["token"])
-    assert token["id"] == user_id
+    print(res_data)
+    token = security.decode_token(res_data["token"])
+    assert token["id"] == str(user_id)
 
 
-def test_login(client: TestClient, test_db: Session):
+def test_login_lowercase(client: TestClient, test_db: Session):
     """
     This test ensures that the user logs in with the lowercase
     attempt two 'MONSEC' and 'monsec' are the same.
     """
     fac.User._meta.sqlalchemy_session = test_db
-    password = AuthHandler().get_password_hash("password")
+    security = AuthHandler()
+    password = security.get_password_hash("password")
     # create user
     user_id = uuid4()
     fac.User.create(id=user_id, username="monsec", password=password)
@@ -126,15 +133,15 @@ def test_login(client: TestClient, test_db: Session):
     response = client.post("/user/login", json=payload)
     res_data = response.json()
     assert response is not None
-    token = AuthHandler.decode_token(res_data["token"])
-    assert token["id"] == user_id
+    token = security.decode_token(res_data["token"])
+    assert token["id"] == str(user_id)
 
 
 def test_post_comment_feedback(client: TestClient, test_db: Session):
-    "Test that the user can post"
+    "Test that the user can post feedback"
     fac.User._meta.sqlalchemy_session = test_db
-    user_id = uuid4()
-    fac.User.create(id=user_id, username="monsec")
+    user_id = str(uuid4())
+    fac.User.create(id=user_id, username="monsec", password="password")
 
     # request
     token = login(user_id)
@@ -142,8 +149,7 @@ def test_post_comment_feedback(client: TestClient, test_db: Session):
     payload = {"comment": "the website crashes!"}
     response = client.post("/user/feedback", json=payload, headers=headers)
     res_data = response.json()
-    assert res_data is not None
-
+    assert res_data is None
     assert response.status_code == status.HTTP_201_CREATED
 
     # check that it has been posted on the db
