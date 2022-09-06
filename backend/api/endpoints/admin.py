@@ -2,6 +2,7 @@
 admin.py
 The admin panel, administrator will be able to see the feedback sent by users here.
 """
+from typing import List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
@@ -9,13 +10,14 @@ from sqlalchemy.orm import Session
 from api.config import get_settings
 from api.utils.auth import AuthHandler
 from api.utils.auth import require_user_account
-from api.meta.constants.schemas import AuthDetails
+from api.meta.constants.schemas import AuthDetails, CommentObject
 from api.utils.database import get_db
 from api.meta.constants.errors import (
     USERNAME_TAKEN,
     SOMETHING_WENT_WRONG,
+    NOT_AUTHORIZED,
 )
-from api.meta.database.model import User
+from api.meta.database.model import User, FeedbackComment
 
 # -------------------
 # Setup Router
@@ -31,7 +33,10 @@ requires_user_account = Depends(require_user_account)
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
-def create_account(auth_handler: AuthDetails, db: Session = requires_db):
+def create_account(
+    auth_handler: AuthDetails,
+    db: Session = requires_db,
+):
     """
     Create admin account
     Args:
@@ -82,11 +87,65 @@ def create_account(auth_handler: AuthDetails, db: Session = requires_db):
         )
 
 
-@router.post("/login", status_code=status.HTTP_200_OK)
-def login(auth_handler: AuthDetails, db: Session = requires_user_account):
+@router.get("/feedback", status_code=status.HTTP_200_OK)
+def post_feedback_comment(
+    user: User = requires_user_account,
+    db: Session = requires_db,
+) -> List:
+    """
+    Return all the feedback comments
+    Args:
+        - None
+    Returns:
+        - List[FeedBackCommentObject]
+    """
+
+    # check if the user requesting is an admin
+    if user.is_admin is False:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=NOT_AUTHORIZED,
+        )
+
+    # return comments
+    # TODO
+    # Decide if returning just the UUIDS or the whole thing
+    # this is for the bot/task scheduler
+
+    comments = db.query(FeedbackComment).all()
+
     pass
 
 
-@router.get("/feedback", status_code=status.HTTP_200_OK)
-def post_feedback_comment():
+@router.get(
+    "/feedback/{comment_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=CommentObject,
+)
+def view_feedback_comment(
+    user: User = requires_user_account,
+    db: Session = requires_db,
+) -> CommentObject:
+    """
+    Return a single feedback comment
+    Args:
+        - comment_id in query
+    Returns:
+        - CommentObject
+    """
+    pass
+
+
+@router.delete("/feedback/{comment_id}", status_code=status.HTTP_200_OK)
+def delete_feedback_comment(
+    user: User = requires_user_account,
+    db: Session = requires_db,
+):
+    """
+    Delete note from db
+    Args:
+        - comment_id in query
+    Returns:
+        - None
+    """
     pass

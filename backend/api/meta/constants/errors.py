@@ -5,6 +5,9 @@ BAD_REQUEST = "Bad request"
 INVALID_TOKEN = "Invalid token"
 SIGNATURE_EXPIRED = "Signature expired"
 
+# AUTH ERRORS
+NOT_AUTHORIZED = "User not authorized"
+
 # LOGIN ERRORS
 INVALID_LOGIN = "invalid username/password"
 

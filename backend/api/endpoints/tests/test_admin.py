@@ -26,7 +26,13 @@ def test_signup(client: TestClient, test_db: Session):
     assert response.status_code == status.HTTP_201_CREATED
 
     # check database
-    admin = test_db.query(mdl.User).filter(mdl.User.username == "admin").one_or_none()
+    admin = (
+        test_db.query(mdl.User)
+        .filter(
+            mdl.User.username == "admin",
+        )
+        .one_or_none()
+    )
     assert admin.is_admin is True
 
 
