@@ -41,6 +41,31 @@ def test_signup(client: TestClient, test_db: Session):
     assert admin.is_admin is True
 
 
+def test_login(client: TestClient, test_db: Session):
+    # setup
+    fac.User._meta.sqlalchemy_session = test_db
+    admin_id = uuid4()
+    # create admin account
+    password = AuthHandler().get_password_hash("password")
+    fac.User.create(
+        id=admin_id,
+        username="admin",
+        password=password,
+        is_admin=True,
+    )
+
+    # request
+    payload = {
+        "username": "admin",
+        "password": "password",
+    }
+    response = client.post("/admin/login", json=payload)
+    res_data = response.json()
+    assert res_data is not None
+    assert res_data["token"] is not None
+    assert res_data["token"] == AuthHandler().encode_token(str(admin_id))
+
+
 def test_fetch_comments(client: TestClient, test_db: Session):
     # setup
     fac.User._meta.sqlalchemy_session = test_db

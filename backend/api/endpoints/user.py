@@ -124,6 +124,10 @@ def fetch_feedback_comments(
     user: User = requires_user_account,
     db: Session = requires_db,
 ):
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
     new_feedback = FeedbackComment(
         comment=feedback.comment,
     )
@@ -131,10 +135,9 @@ def fetch_feedback_comments(
     try:
         db.add(new_feedback)
         db.commit()
+
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=SOMETHING_WENT_WRONG,
         )
-
-    pass

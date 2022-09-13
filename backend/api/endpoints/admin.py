@@ -1,11 +1,12 @@
 """
 admin.py
-The admin panel, administrator will be able to see the feedback sent by users here.
+The admin panel, administrator will be able
+to see the feedback sent by users here.
 """
-from typing import List
+from typing import Dict, List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from uuid import uuid4, UUID
+from uuid import UUID
 
 # Local imports
 from api.config import get_settings
@@ -89,6 +90,42 @@ def create_account(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=SOMETHING_WENT_WRONG,
         )
+
+
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    response_model=Dict[str, str],
+)
+def login(
+    auth_handler: AuthDetails,
+    db: Session = requires_db,
+):
+    """
+    Login for admin accounts
+    Args:
+        - username: str
+        - password: str
+    Return:
+        token: dict
+    """
+
+    security = AuthHandler()
+    username = auth_handler.username.lower()
+    password = auth_handler.password
+    hashed_password = security.get_password_hash(password)
+    matches = security.verify_password(
+        password,
+        hashed_password,
+    )
+    # check that the credentials match a user
+    user = db.query(User).filter(User.username == username).one_or_none()
+    if (user is None) or (user.is_admin is False) or not (matches):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    # else return admin token
+    token = security.encode_token(str(user.id))
+    return {"token": token}
 
 
 @router.get(
