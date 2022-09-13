@@ -5,6 +5,7 @@ The admin panel, administrator will be able to see the feedback sent by users he
 from typing import List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
+from uuid import uuid4, UUID
 
 # Local imports
 from api.config import get_settings
@@ -32,7 +33,10 @@ requires_db = Depends(get_db)
 requires_user_account = Depends(require_user_account)
 
 
-@router.post("/signup", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/signup",
+    status_code=status.HTTP_201_CREATED,
+)
 def create_account(
     auth_handler: AuthDetails,
     db: Session = requires_db,
@@ -87,7 +91,10 @@ def create_account(
         )
 
 
-@router.get("/feedback", status_code=status.HTTP_200_OK)
+@router.get(
+    "/feedback",
+    status_code=status.HTTP_200_OK,
+)
 def post_feedback_comment(
     user: User = requires_user_account,
     db: Session = requires_db,
@@ -114,7 +121,13 @@ def post_feedback_comment(
 
     comments = db.query(FeedbackComment).all()
 
-    pass
+    return [
+        CommentObject(
+            id=comment.id,
+            comment=comment.comment,
+        )
+        for comment in comments
+    ]
 
 
 @router.get(
@@ -123,6 +136,7 @@ def post_feedback_comment(
     response_model=CommentObject,
 )
 def view_feedback_comment(
+    comment_id: UUID,
     user: User = requires_user_account,
     db: Session = requires_db,
 ) -> CommentObject:
@@ -133,11 +147,36 @@ def view_feedback_comment(
     Returns:
         - CommentObject
     """
-    pass
+
+    # check that is admin
+    if user.is_admin is False:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    # get the comment from the db
+    comment = (
+        db.query(FeedbackComment)
+        .filter(
+            FeedbackComment.id == comment_id,
+        )
+        .one_or_none()
+    )
+
+    # if None raise 404
+    if comment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    return CommentObject(
+        id=comment.id,
+        comment=comment.comment,
+    )
 
 
-@router.delete("/feedback/{comment_id}", status_code=status.HTTP_200_OK)
+@router.delete(
+    "/feedback/{comment_id}",
+    status_code=status.HTTP_200_OK,
+)
 def delete_feedback_comment(
+    comment_id: UUID,
     user: User = requires_user_account,
     db: Session = requires_db,
 ):
@@ -148,4 +187,22 @@ def delete_feedback_comment(
     Returns:
         - None
     """
-    pass
+
+    # check that is admin
+    if user.is_admin is False:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    # fetch the comment from the db
+    comment = (
+        db.query(FeedbackComment)
+        .filter(
+            FeedbackComment.id == comment_id,
+        )
+        .one_or_none()
+    )
+    if comment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    # delete if no errors
+    db.delete(comment)
+    db.commit()
