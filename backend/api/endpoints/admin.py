@@ -40,7 +40,7 @@ requires_user_account = Depends(require_user_account)
     response_model=None,
 )
 def create_account(
-    auth_handler: AuthDetails,
+    auth_details: AuthDetails,
     db: Session = requires_db,
 ) -> None:
     """
@@ -58,7 +58,7 @@ def create_account(
     user_exists = (
         db.query(User)
         .filter(
-            User.username.ilike(auth_handler.username),
+            User.username.ilike(auth_details.username),
         )
         .one_or_none()
     )
@@ -72,8 +72,8 @@ def create_account(
 
     # else: add it to the db
     # hash password
-    password = security.get_password_hash(auth_handler.password)
-    username = auth_handler.username.lower()
+    password = security.get_password_hash(auth_details.password)
+    username = auth_details.username.lower()
     new_admin = User(
         username=username,
         password=password,
@@ -99,7 +99,7 @@ def create_account(
     response_model=Dict[str, str],
 )
 def login(
-    auth_handler: AuthDetails,
+    auth_details: AuthDetails,
     db: Session = requires_db,
 )->Dict[str,str]:
     """
@@ -112,8 +112,8 @@ def login(
     """
 
     security = AuthHandler()
-    username = auth_handler.username.lower()
-    password = auth_handler.password
+    username = auth_details.username.lower()
+    password = auth_details.password
     hashed_password = security.get_password_hash(password)
     matches = security.verify_password(
         password,
@@ -122,7 +122,7 @@ def login(
     # check that the credentials match a user
     user = db.query(User).filter(User.username == username).one_or_none()
     if (user is None) or (user.is_admin is False) or not (matches):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     # else return admin token
     token = security.encode_token(str(user.id))

@@ -61,7 +61,7 @@ def create_account(
     # if the user exists, raise error
     if user_exists is not None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail=USERNAME_TAKEN,
         )
 
