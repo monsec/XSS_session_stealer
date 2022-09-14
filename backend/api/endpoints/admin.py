@@ -37,18 +37,20 @@ requires_user_account = Depends(require_user_account)
 @router.post(
     "/signup",
     status_code=status.HTTP_201_CREATED,
+    response_model=None,
 )
 def create_account(
     auth_handler: AuthDetails,
     db: Session = requires_db,
-):
+) -> None:
     """
     Create admin account
     Args:
         - username: str
         - password: str
 
-    Returns: None
+    Return:
+        - None
     """
 
     security = AuthHandler()
@@ -69,7 +71,6 @@ def create_account(
         )
 
     # else: add it to the db
-
     # hash password
     password = security.get_password_hash(auth_handler.password)
     username = auth_handler.username.lower()
@@ -100,14 +101,14 @@ def create_account(
 def login(
     auth_handler: AuthDetails,
     db: Session = requires_db,
-):
+)->Dict[str,str]:
     """
     Login for admin accounts
     Args:
         - username: str
         - password: str
     Return:
-        token: dict
+        - token: dict
     """
 
     security = AuthHandler()
@@ -131,17 +132,18 @@ def login(
 @router.get(
     "/feedback",
     status_code=status.HTTP_200_OK,
+    response_model=List[CommentObject]
 )
 def post_feedback_comment(
     user: User = requires_user_account,
     db: Session = requires_db,
-) -> List:
+) -> List[CommentObject]:
     """
     Return all the feedback comments
     Args:
         - None
-    Returns:
-        - List[FeedBackCommentObject]
+    Return:
+        - comments: List[CommentObject]
     """
 
     # check if the user requesting is an admin
@@ -150,11 +152,6 @@ def post_feedback_comment(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=NOT_AUTHORIZED,
         )
-
-    # return comments
-    # TODO
-    # Decide if returning just the UUIDS or the whole thing
-    # this is for the bot/task scheduler
 
     comments = db.query(FeedbackComment).all()
 
@@ -211,12 +208,13 @@ def view_feedback_comment(
 @router.delete(
     "/feedback/{comment_id}",
     status_code=status.HTTP_200_OK,
+    response_model=None
 )
 def delete_feedback_comment(
     comment_id: UUID,
     user: User = requires_user_account,
     db: Session = requires_db,
-):
+)-> None:
     """
     Delete note from db
     Args:

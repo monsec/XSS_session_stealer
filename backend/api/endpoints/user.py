@@ -2,6 +2,7 @@
 user.py
 The users will be able to send feedback to the admin from here.
 """
+from typing import Dict
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
@@ -30,8 +31,15 @@ requires_db = Depends(get_db)
 requires_user_account = Depends(require_user_account)
 
 
-@router.post("/signup", status_code=status.HTTP_201_CREATED)
-def create_account(auth_handler: AuthDetails, db: Session = requires_db):
+@router.post(
+    "/signup",
+    status_code=status.HTTP_201_CREATED,
+    response_model=None,
+)
+def create_account(
+    auth_handler: AuthDetails,
+    db: Session = requires_db,
+) -> None:
     """
     This function creates a user that is not registered yet.
     Args:
@@ -80,8 +88,15 @@ def create_account(auth_handler: AuthDetails, db: Session = requires_db):
         )
 
 
-@router.post("/login", status_code=status.HTTP_200_OK)
-def login(auth_handler: AuthDetails, db: Session = requires_db):
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    response_model=Dict[str, str],
+)
+def login(
+    auth_handler: AuthDetails,
+    db: Session = requires_db,
+) -> Dict[str, str]:
     """
     This function checks the username,password passed and returns
     a token if successful
@@ -118,13 +133,23 @@ def login(auth_handler: AuthDetails, db: Session = requires_db):
     return {"token": token}
 
 
-@router.post("/feedback", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/feedback",
+    status_code=status.HTTP_201_CREATED,
+    response_model=None,
+)
 def fetch_feedback_comments(
     feedback: CommentFeedback,
     user: User = requires_user_account,
     db: Session = requires_db,
-):
-
+) -> None:
+    """
+    Create a comment in the db
+    Args:
+        - feedback: CommentFeedback Object
+    Return:
+        - None
+    """
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
