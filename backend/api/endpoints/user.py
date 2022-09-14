@@ -152,7 +152,7 @@ def fetch_feedback_comments(
     """
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
+    print(feedback)
     new_feedback = FeedbackComment(
         comment=feedback.comment,
     )
