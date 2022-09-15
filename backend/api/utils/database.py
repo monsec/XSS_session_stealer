@@ -19,10 +19,11 @@ def get_db():
     """
     Get the db session
     """
-    SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://%s:%s@%s/%s" % (
+    SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
         settings.DATABASE_USER,
         settings.DATABASE_PASSWORD,
         settings.DATABASE_HOST,
+        settings.DATABASE_PORT,
         settings.DATABASE_NAME,
     )
 

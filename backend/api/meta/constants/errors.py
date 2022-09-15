@@ -5,5 +5,13 @@ BAD_REQUEST = "Bad request"
 INVALID_TOKEN = "Invalid token"
 SIGNATURE_EXPIRED = "Signature expired"
 
+# AUTH ERRORS
+NOT_AUTHORIZED = "User not authorized"
+
+# LOGIN ERRORS
+INVALID_LOGIN = "invalid username/password"
+
 # DB ERRORS
+USERNAME_TAKEN = "Username taken"
 USER_DOES_NOT_EXIST = "User does not exist"
+SOMETHING_WENT_WRONG = "Something went wrong"

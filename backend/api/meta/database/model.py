@@ -82,6 +82,7 @@ class User(Base):
     username = Column(
         String(64),
         nullable=False,
+        unique=True,
     )
     password = Column(
         String(128),
@@ -96,7 +97,7 @@ class User(Base):
 
 @generic_repr
 class FeedbackComment(Base):
-    __tablename__ = "feeback_comment"
+    __tablename__ = "feedback_comment"
 
     id = Column(
         UUID(as_uuid=True),

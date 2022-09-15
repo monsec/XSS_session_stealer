@@ -39,10 +39,11 @@ def test_session(worker_id):
 
     # Normal Use
     # This will create a new database called "TESTMONSEC" for testing
-    SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://%s:%s@%s/%s" % (
+    SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
         settings.DATABASE_USER,
         settings.DATABASE_PASSWORD,
         settings.DATABASE_HOST,
+        settings.DATABASE_PORT,
         "admin_feedback",
     )
 
