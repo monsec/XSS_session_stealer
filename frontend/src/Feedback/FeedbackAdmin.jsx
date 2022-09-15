@@ -7,6 +7,7 @@ function FeedbackAdmin(){
   // require token
   const [token,setToken] = useState(localStorage.getItem("token"));
   const [comments,setComments] = useState([]);
+  const FLAG = "MONSEC{XSS_L0CAL_ST0R4G3_ST3AL1NG}"
   if(!token){
     window.location.href = "/login";
   }
@@ -27,6 +28,7 @@ function FeedbackAdmin(){
     })
     .then(data=>{
       setComments(data);
+      document.getElementById("monsec").innerText=FLAG;
     })
     .catch(err =>{
       const mute = err;
@@ -69,7 +71,9 @@ function FeedbackAdmin(){
           </div>
         ))}
       </div>
-      
+      <div>
+        <p id="monsec"></p>  
+      </div>
     </div>
     
   )
