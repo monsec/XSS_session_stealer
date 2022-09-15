@@ -7,7 +7,7 @@ function FeedbackAdmin(){
   // require token
   const [token,setToken] = useState(localStorage.getItem("token"));
   const [comments,setComments] = useState([]);
-  const FLAG = "MONSEC{XSS_L0CAL_ST0R4G3_ST3AL1NG}"
+  const FLAG = "MONSEC{FLAG_FOR_TESTING}"
   if(!token){
     window.location.href = "/login";
   }
