@@ -7,6 +7,8 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from uuid import uuid4, UUID
 
+from sqlalchemy import TIMESTAMP
+
 # Local imports
 from api.config import get_settings
 
@@ -51,4 +53,7 @@ class CommentObject(BaseModel):
     comment: str = Field(
         title="The comment from the user",
         example="The website crashes.",
+    )
+    created_date: str = Field(
+        title="The date the comment was created",
     )

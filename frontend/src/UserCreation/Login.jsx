@@ -32,7 +32,7 @@ function Login(){
     .then(
       function (token) {
           localStorage.setItem("token", token["token"]);
-          window.location.href = "/login"; // Need to redirect to feedback page
+          window.location.href = "/user/feedback"; // Need to redirect to feedback page
       }
     )
     .catch(err => { const mute = err })

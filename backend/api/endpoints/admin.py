@@ -7,7 +7,7 @@ from typing import Dict, List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from uuid import UUID
-
+from datetime import datetime
 # Local imports
 from api.config import get_settings
 from api.utils.auth import AuthHandler
@@ -101,7 +101,7 @@ def create_account(
 def login(
     auth_details: AuthDetails,
     db: Session = requires_db,
-)->Dict[str,str]:
+) -> Dict[str, str]:
     """
     Login for admin accounts
     Args:
@@ -132,7 +132,7 @@ def login(
 @router.get(
     "/feedback",
     status_code=status.HTTP_200_OK,
-    response_model=List[CommentObject]
+    response_model=List[CommentObject],
 )
 def post_feedback_comment(
     user: User = requires_user_account,
@@ -153,12 +153,20 @@ def post_feedback_comment(
             detail=NOT_AUTHORIZED,
         )
 
-    comments = db.query(FeedbackComment).all()
-
+    # return the comments from oldest to newest
+    # this is to avoid a stack rather than a queue
+    comments = (
+        db.query(FeedbackComment)
+        .order_by(
+            FeedbackComment.created_date.asc(),
+        )
+        .all()
+    )
     return [
         CommentObject(
             id=comment.id,
             comment=comment.comment,
+            created_date=comment.created_date.strftime('%d/%m/%y - %H:%M:%S'),
         )
         for comment in comments
     ]
@@ -202,19 +210,18 @@ def view_feedback_comment(
     return CommentObject(
         id=comment.id,
         comment=comment.comment,
+        created_date=comment.created_date.strftime('%d/%m/%y - %H:%M:%S'),
     )
 
 
 @router.delete(
-    "/feedback/{comment_id}",
-    status_code=status.HTTP_200_OK,
-    response_model=None
+    "/feedback/{comment_id}", status_code=status.HTTP_200_OK, response_model=None
 )
 def delete_feedback_comment(
     comment_id: UUID,
     user: User = requires_user_account,
     db: Session = requires_db,
-)-> None:
+) -> None:
     """
     Delete note from db
     Args:
